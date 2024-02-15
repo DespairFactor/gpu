@@ -92,6 +92,7 @@ void kbase_ipa_control_term(struct kbase_device *kbdev);
  *                 the registration is successful. This handle identifies
  *                 a client's session and shall be provided in its future
  *                 queries.
+ * @now:            The current monotonic time (ktime_get_raw()).
  *
  * A client needs to subscribe to the IPA Control component by declaring which
  * performance counters it intends to read, and specifying a scaling factor
@@ -154,7 +155,8 @@ int kbase_ipa_control_unregister(struct kbase_device *kbdev,
  */
 int kbase_ipa_control_query(struct kbase_device *kbdev, const void *client,
 			    u64 *values, size_t num_values,
-			    u64 *protected_time);
+			    u64 *protected_time, ktime_t *now);
+
 
 /**
  * kbase_ipa_control_handle_gpu_power_on - Handle the GPU power on event

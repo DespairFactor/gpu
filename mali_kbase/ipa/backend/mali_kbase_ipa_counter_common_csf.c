@@ -289,7 +289,7 @@ int kbase_ipa_counter_dynamic_coeff(struct kbase_ipa_model *model, u32 *coeffp)
 	 */
 	ret = kbase_ipa_control_query(kbdev,
 				      model_data->ipa_control_client,
-				      cnt_values_p, num_counters, NULL);
+				      cnt_values_p, num_counters, NULL, &now);
 	if (WARN_ON(ret))
 		return ret;
 
@@ -365,7 +365,7 @@ void kbase_ipa_counter_reset_data(struct kbase_ipa_model *model)
 
 	ret = kbase_ipa_control_query(model->kbdev,
 				      model_data->ipa_control_client,
-				      cnt_values_p, num_counters, NULL);
+				      cnt_values_p, num_counters, NULL, &now);
 	WARN_ON(ret);
 }
 
