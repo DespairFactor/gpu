@@ -85,7 +85,7 @@ static int gpu_dvfs_governor_basic(struct kbase_device *kbdev,
  *
  *   * If &util or &mcu_util is lower than the minimm utilization for the current level, then
  *     we decrement the hysteresis value. If this decrement results in
- *     hysteresis being zero, then we drop a level.
+ *     hysteresis being less than zero, then we drop a level.
  *
  * Return: The level that the GPU should run at next.
  *
@@ -108,6 +108,11 @@ gpu_dvfs_governor_quickstep_use_mcu_util(struct kbase_device *kbdev,
 
 	lockdep_assert_held(&pc->dvfs.lock);
 
+	if (util >= 80) {
+		pc->dvfs.governor.delay = 15;
+		return 0;
+	}
+
 	if ((level > level_max) && (util > tbl[level].util_max ||
 				    mcu_util > tbl[level].mcu_util_max)) {
 		/* We need to clock up. */
@@ -121,7 +126,7 @@ gpu_dvfs_governor_quickstep_use_mcu_util(struct kbase_device *kbdev,
 				tbl[level].util_max, mcu_util,
 				tbl[level].mcu_util_max);
 			level -= step_up;
-			pc->dvfs.governor.delay = tbl[level].hysteresis / 2;
+			pc->dvfs.governor.delay = (tbl[level].hysteresis + 1) / 2;
 		} else {
 			dev_dbg(kbdev->dev,
 				"DVFS +1: %d -> %d (util: %d / %d mcu: %d / %d) \n",
@@ -137,7 +142,7 @@ gpu_dvfs_governor_quickstep_use_mcu_util(struct kbase_device *kbdev,
 		pc->dvfs.governor.delay--;
 
 		/* Check if we've resisted downclocking long enough */
-		if (pc->dvfs.governor.delay <= 0) {
+		if (pc->dvfs.governor.delay < 0) {
 			dev_dbg(kbdev->dev,
 				"DVFS -1: %d -> %d (util: %d / %d mcu: %d / %d)\n",
 				level, level + 1, util, tbl[level].util_min,
